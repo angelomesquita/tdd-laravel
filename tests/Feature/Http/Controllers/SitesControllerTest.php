@@ -1,0 +1,81 @@
+<?php
+
+namespace Tests\Feature\Http\Controllers;
+
+use App\Models\Site;
+use App\Models\User;
+use App\Notifications\SiteAdded;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
+use Tests\TestCase;
+
+class SitesControllerTest extends TestCase
+{
+    use RefreshDatabase;
+
+    /** @test */
+    public function it_create_sites_and_sends_a_notification_to_the_user()
+    {
+        $this->withoutExceptionHandling();
+        Notification::fake();
+        $user = User::factory()->create();
+        $siteData = ['name' => 'Google', 'url' => 'https://google.com'];
+        $response = $this->followingRedirects()
+            ->actingAs($user)
+            ->post(route('sites.store'), $siteData);
+        $site = Site::first();
+        $this->assertEquals(1, Site::count());
+        $this->assertEquals('Google', $site->name);
+        $this->assertEquals('https://google.com', $site->url);
+        $this->assertNull($site->is_online);
+        $this->assertEquals($user->id, $site->user->id);
+        $response->assertSeeText('Google');
+        $this->assertEquals(route('sites.show', $site), url()->current());
+        Notification::assertSentTo($user, SiteAdded::class, function($notification) use ($site) {
+            return $notification->site->id === $site->id;
+        });
+    }
+
+    /** @test */
+    public function it_create_sites()
+    {
+        $this->withoutExceptionHandling();
+        $user = User::factory()->create();
+        $siteData = ['name' => 'Google', 'url' => 'https://google.com'];
+        $response = $this->followingRedirects()
+            ->actingAs($user)
+            ->post(route('sites.store'), $siteData);
+        $site = Site::first();
+        $this->assertEquals(1, Site::count());
+        $this->assertEquals('Google', $site->name);
+        $this->assertEquals('https://google.com', $site->url);
+        $this->assertNull($site->is_online);
+        $this->assertEquals($user->id, $site->user->id);
+        $response->assertSeeText('Google');
+        $this->assertEquals(route('sites.show', $site), url()->current());
+    }
+
+    /** @test */
+    public function it_requires_all_field_to_be_present()
+    {
+        Notification::fake();
+        $user = User::factory()->create();
+        $siteData = ['name' => '', 'url' => ''];
+        $response = $this->actingAs($user)->post(route('sites.store'), $siteData);
+        $this->assertEquals(0, Site::count());
+        $response->assertSessionHasErrors(['name', 'url']);
+        Notification::assertNothingSent();
+    }
+
+    /** @test */
+    public function it_requires_the_url_to_have_a_valid_protocol()
+    {
+        Notification::fake();
+        $user = User::factory()->create();
+        $siteData = ['name' => 'Google', 'url' => 'google.com'];
+        $response = $this->actingAs($user)->post(route('sites.store'), $siteData);
+        $this->assertEquals(0, Site::count());
+        $response->assertSessionHasErrors(['url']);
+        Notification::assertNothingSent();
+    }
+}
