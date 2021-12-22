@@ -68,6 +68,20 @@ class SitesControllerTest extends TestCase
     }
 
     /** @test */
+    public function it_redirects_a_user_to_a_previous_site_if_they_try_to_add_a_duplicate()
+    {
+        Notification::fake();
+        $user = User::factory()->create();
+        $site = $user->sites()->save(Site::factory()->make());
+        $siteData = ['name' => 'Google 2', 'url' => $site->url];
+        $response = $this->actingAs($user)->post(route('sites.store'), $siteData);
+        $response->assertRedirect(route('sites.show', $site));
+        $response->assertSessionHasErrors(['url']);
+        Notification::assertNothingSent();
+        $this->assertEquals(1, Site::count());
+    }
+
+    /** @test */
     public function it_requires_the_url_to_have_a_valid_protocol()
     {
         Notification::fake();
