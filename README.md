@@ -21,3 +21,4 @@ Using the Test Driven Development technique in a complete Laravel application.
 
 ### Running checks against sites
 - Checking a website
+- Casting the check model properties
