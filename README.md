@@ -18,3 +18,6 @@ Using the Test Driven Development technique in a complete Laravel application.
 - Testing Extracting validation to a request class
 - Sending notifications
 - Visual changes & making sure a site does not get added twice
+
+### Running checks against sites
+- Checking a website

@@ -11,6 +11,10 @@ class Site extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'is_online' => 'boolean',
+    ];
+
     protected $fillable = [
         'name',
         'url',
@@ -19,5 +23,10 @@ class Site extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function checks()
+    {
+        return $this->hasMany(Check::class);
     }
 }
