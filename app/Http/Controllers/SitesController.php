@@ -5,9 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreSiteRequest;
 use App\Http\Requests\UpdateSiteRequest;
 use App\Models\Site;
-use App\Models\User;
 use App\Notifications\SiteAdded;
-use App\Rules\ValidProtocol;
 
 class SitesController extends Controller
 {
