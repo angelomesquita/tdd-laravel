@@ -35,6 +35,9 @@ class CheckWebsiteTest extends TestCase
         $this->assertEquals('<h1>Success</h1>', $check->response_content);
         $this->assertTrue($check->elapsed_time >= 200);
         $this->assertTrue($site->is_online);
+        Http::assertSent(function($request) { 
+            return $request->url() === 'https://google.com';
+        });
     }
 
     /** 
@@ -60,6 +63,9 @@ class CheckWebsiteTest extends TestCase
         $this->assertEquals('<h1>Failure</h1>', $check->response_content);
         $this->assertTrue($check->elapsed_time >= 200);
         $this->assertFalse($site->is_online);
+        Http::assertSent(function($request) { 
+            return $request->url() === 'https://google.com';
+        });
     }
 
     public function failureCodes()
