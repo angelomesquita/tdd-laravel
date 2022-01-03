@@ -36,4 +36,34 @@ class CheckWebsiteTest extends TestCase
         $this->assertTrue($check->elapsed_time >= 200);
         $this->assertTrue($site->is_online);
     }
+
+    /** 
+     * @test 
+     * @dataProvider failureCodes
+     */
+    public function it_handles_500s($failureCode)
+    {
+        $user = User::factory()->create();
+        $site = $user->sites()->save(Site::factory()->make([
+            'url' => 'https://google.com'
+        ]));
+        Http::fake(function($request) use ($failureCode) {
+            usleep(200 * 1000);
+            return Http::response('<h1>Failure</h1>', $failureCode);
+        });
+        $this->assertEquals(0, $site->checks()->count());
+        $job = new CheckWebsite($site);
+        $job->handle();
+        $site->refresh();
+        $check = $site->checks()->first();
+        $this->assertEquals($failureCode, $check->response_status);
+        $this->assertEquals('<h1>Failure</h1>', $check->response_content);
+        $this->assertTrue($check->elapsed_time >= 200);
+        $this->assertFalse($site->is_online);
+    }
+
+    public function failureCodes()
+    {
+        return [[300], [400], [500]];
+    }
 }
