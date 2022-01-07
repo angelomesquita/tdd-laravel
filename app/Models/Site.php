@@ -13,11 +13,14 @@ class Site extends Model
 
     protected $casts = [
         'is_online' => 'boolean',
+        'is_resolving' => 'boolean',
     ];
 
     protected $fillable = [
         'name',
         'url',
+        'is_online',
+        'is_resolving'
     ];
 
     public function user()
