@@ -16,13 +16,6 @@ class Site extends Model
         'is_resolving' => 'boolean',
     ];
 
-    protected $fillable = [
-        'name',
-        'url',
-        'is_online',
-        'is_resolving'
-    ];
-
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -31,5 +24,11 @@ class Site extends Model
     public function checks()
     {
         return $this->hasMany(Check::class);
+    }
+
+    public function isResolving(): bool
+    {
+        $host = parse_url($this->url)['host'];
+        return gethostbyname($host) !== $host;
     }
 }
