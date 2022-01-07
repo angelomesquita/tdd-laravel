@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreSiteRequest;
 use App\Http\Requests\UpdateSiteRequest;
+use App\Jobs\CheckWebsite;
 use App\Models\Site;
 use App\Notifications\SiteAdded;
 
@@ -47,6 +48,7 @@ class SitesController extends Controller
         }
         $site = auth()->user()->sites()->create($request->validated());
         $site->user->notify(new SiteAdded($site));
+        CheckWebsite::dispatch($site);
         return redirect()->route('sites.show', $site);
     }
 
@@ -59,7 +61,7 @@ class SitesController extends Controller
     public function show(Site $site)
     {
         $checks = $site->checks()->latest()->limit(10)->get();
-        return view('sites.show', compact('sites', 'checks'));
+        return view('sites.show', compact('site', 'checks'));
     }
 
     /**

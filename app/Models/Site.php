@@ -26,7 +26,7 @@ class Site extends Model
         return $this->hasMany(Check::class);
     }
 
-    public function isResolving(): bool
+    public function isCurrentlyResolving(): bool
     {
         $host = parse_url($this->url)['host'];
         return gethostbyname($host) !== $host;

@@ -2,10 +2,12 @@
 
 namespace Tests\Feature\Http\Controllers;
 
+use App\Jobs\CheckWebsite;
 use App\Models\Site;
 use App\Models\User;
 use App\Notifications\SiteAdded;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
@@ -18,6 +20,7 @@ class SitesControllerTest extends TestCase
     {
         $this->withoutExceptionHandling();
         Notification::fake();
+        Bus::fake();
         $user = User::factory()->create();
         $siteData = ['name' => 'Google', 'url' => 'https://google.com'];
         $response = $this->followingRedirects()
@@ -33,6 +36,9 @@ class SitesControllerTest extends TestCase
         $this->assertEquals(route('sites.show', $site), url()->current());
         Notification::assertSentTo($user, SiteAdded::class, function($notification) use ($site) {
             return $notification->site->id === $site->id;
+        });
+        Bus::assertDispatched(CheckWebsite::class, function ($job) use ($site) {
+            return $job->site->id === $site->id;
         });
     }
 

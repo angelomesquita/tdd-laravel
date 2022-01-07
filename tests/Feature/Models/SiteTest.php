@@ -15,8 +15,8 @@ class SiteTest extends TestCase
     {
         $site = new Site();
         $site->url = 'https://google.com';
-        $this->assertTrue($site->isResolving());
+        $this->assertTrue($site->isCurrentlyResolving());
         $site->url = 'https://' . Str::random(12) . '.com';
-        $this->assertFalse($site->isResolving());
+        $this->assertFalse($site->isCurrentlyResolving());
     }
 }
