@@ -92,4 +92,28 @@ class SitesControllerTest extends TestCase
         $response->assertSessionHasErrors(['url']);
         Notification::assertNothingSent();
     }
+
+    /** @test */
+    public function it_allows_a_user_to_see_their_sites(): void
+    {
+        $user = User::factory()->create();
+        $site = $user->sites()->save(Site::factory()->make());
+        $response = $this->actingAs($user)->get(route('sites.index'));
+        $response->assertStatus(200);
+        $response->assertSeeText($site->url);
+        $response->assertSeeText($site->name);
+        $response->assertSeeText($site->is_online ? 'Online' : 'Offline');
+    }
+
+    /** @test */
+    public function it_allows_a_user_to_see_their_site(): void
+    {
+        $user = User::factory()->create();
+        $site = $user->sites()->save(Site::factory()->make());
+        $response = $this->actingAs($user)->get(route('sites.show'));
+        $response->assertStatus(200);
+        $response->assertSeeText($site->url);
+        $response->assertSeeText($site->name);
+        $response->assertSeeText($site->is_online ? 'Your site is online' : 'Your site is offline');
+    }
 }
