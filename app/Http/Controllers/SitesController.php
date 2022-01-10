@@ -17,9 +17,10 @@ class SitesController extends Controller
      */
     public function index()
     {
-        return view('sites.index', [
-            'sites' => auth()->user()->sites
-        ]);
+        $sites = auth()->user()->sites()
+            ->when(request('status') === 'offline', fn($query) => $query->offline())
+            ->get();
+        return view('sites.index', ['sites' => $sites]);
     }
 
     /**
