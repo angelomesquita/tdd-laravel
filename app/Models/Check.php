@@ -21,6 +21,11 @@ class Check extends Model
         return $this->response_status >=200 && $this->response_status < 300;
     }
 
+    public function failed()
+    {
+        return !$this->successful();
+    }
+
     public function site()
     {
         return $this->belongsTo(Site::class);
