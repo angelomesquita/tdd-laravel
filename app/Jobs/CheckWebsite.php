@@ -54,6 +54,9 @@ class CheckWebsite implements ShouldQueue
         if ($this->shouldSendNotification($check)) {
             $this->site->user->notify(new SiteStatusChanged($this->site, $check));
         }
+        if ($check->failed() && $this->site->webhook_url) {
+            SendWebhook::dispatch($check);
+        }
         $this->site->update([
             'is_online' => $check->successful(),
             'is_resolving' => true

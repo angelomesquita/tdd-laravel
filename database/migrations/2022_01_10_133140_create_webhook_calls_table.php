@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateSitesTable extends Migration
+class CreateWebhookCallsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,14 +13,11 @@ class CreateSitesTable extends Migration
      */
     public function up()
     {
-        Schema::create('sites', function (Blueprint $table) {
+        Schema::create('webhook_calls', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
             $table->string('url');
-            $table->boolean('is_online')->nullable();
-            $table->boolean('is_resolving')->nullable();
-            $table->string('webhook_url')->nullable();
-            $table->unsignedInteger('user_id')->index();
+            $table->json('data');
+            $table->unsignedInteger('check_id');
             $table->timestamps();
         });
     }
@@ -32,6 +29,6 @@ class CreateSitesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('sites');
+        Schema::dropIfExists('webhook_calls');
     }
 }

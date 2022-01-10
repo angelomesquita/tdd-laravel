@@ -122,4 +122,30 @@ class SitesControllerTest extends TestCase
         $response->assertSeeText($site->name);
         $response->assertSeeText($site->is_online ? 'Your site is online' : 'Your site is offline');
     }
+
+    /** @test */
+    public function it_allows_a_user_to_edit_the_webhook_url(): void
+    {
+        $this->withoutExceptionHandling();
+        $user = User::factory()->create();
+        $site = $user->sites()->save(Site::factory()->make([
+            'webhook_url' => null,
+            'is_online' => false
+        ]));
+        $response = $this->followingRedirects()
+            ->actingAs($user)
+            ->put(route('sites.update'), $site, [
+                'name' => 'Google',
+                'webhook_url' => $webhookUrl = 'https://tddwithlaravel.com/webhook'
+            ]);
+        $site->refresh();
+        $this->assertEquals('Google', $site->name);
+        $this->assertEquals($webhookUrl, $site->webhook_url);
+        $this->assertEquals('https://google.com', $site->url);
+        $this->assertFalse($site->is_online);
+        $this->assertEquals($user->id, $site->user->id);
+        $response->assertSeeText('Google');
+        $response->assertSeeText($webhookUrl);
+        $this->assertEquals(route('sites.show', $site), url()->current());
+    }
 }
