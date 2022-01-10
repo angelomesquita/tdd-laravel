@@ -182,6 +182,26 @@ class SitesControllerTest extends TestCase
     /** @test */
     public function it_gets_archived_sites(): void
     {
-        $this->markTestIncomplete();
+        $this->withoutExceptionHandling();
+        $user = User::factory()->create();
+        $archivedSite = $user->sites()->save(Site::factory()->make([
+            'url' => 'arcbivedsite.com',
+            'is_online' => false,
+        ]));
+        $archivedSite->archive();
+        $regularSite = $user->sites()->save(Site::factory()->make([
+            'url' => 'regularsite.com',
+            'is_online' => true,
+        ]));
+        
+        $response = $this->actingAs($user)
+            ->get(route('sites.index', ['status' => 'archived']));
+        $response->assertStatus(200);
+        $response->assertSeeText($archivedSite->url);
+        $response->assertSeeText($archivedSite->name);
+        $response->assertSeeText('Offline');
+        $response->assertDontSeeText($regularSite->url);
+        $response->assertDontSeeText($regularSite->name);
+        $response->assertDontSeeText('Online');
     }
 }

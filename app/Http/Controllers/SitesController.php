@@ -19,6 +19,7 @@ class SitesController extends Controller
     {
         $sites = auth()->user()->sites()
             ->when(request('status') === 'offline', fn($query) => $query->offline())
+            ->when(request('status') === 'archived', fn($query) => $query->archived())
             ->get();
         return view('sites.index', ['sites' => $sites]);
     }
