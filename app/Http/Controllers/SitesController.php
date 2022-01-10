@@ -84,7 +84,11 @@ class SitesController extends Controller
      */
     public function update(UpdateSiteRequest $request, Site $site)
     {
-        //
+        $site->update([
+            'name' => request('name'),
+            'webhook_url' => request('webhook_url')
+        ]);
+        return redirect()->route('sites.show', $site);
     }
 
     /**
