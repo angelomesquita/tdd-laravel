@@ -13,11 +13,7 @@ class Site extends Model
 
     protected $casts = [
         'is_online' => 'boolean',
-    ];
-
-    protected $fillable = [
-        'name',
-        'url',
+        'is_resolving' => 'boolean',
     ];
 
     public function user()
@@ -28,5 +24,11 @@ class Site extends Model
     public function checks()
     {
         return $this->hasMany(Check::class);
+    }
+
+    public function isCurrentlyResolving(): bool
+    {
+        $host = parse_url($this->url)['host'];
+        return gethostbyname($host) !== $host;
     }
 }

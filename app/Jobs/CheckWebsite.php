@@ -7,9 +7,11 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 
 class CheckWebsite implements ShouldQueue
 {
@@ -35,13 +37,20 @@ class CheckWebsite implements ShouldQueue
      */
     public function handle()
     {
+        if (!$this->site->isCurrentlyResolving()) {
+            $this->site->update(['is_online' => false, 'is_resolving' => false]);
+            return;
+        }
         $response = $this->measureTime(fn() => Http::get($this->site->url));
         $check = $this->site->checks()->create([
             'response_status' => $response->status(),
-            'response_content' => $response->body(),
+            'response_content' => Str::limit($response->body(), 500, ''),
             'elapsed_time' => $this->elapsedTime
         ]);
-        $this->site->update(['is_online' => $check->successful()]);
+        $this->site->update([
+            'is_online' => $check->successful(),
+            'is_resolving' => true
+        ]);
     }
 
     protected function measureTime($closure)
