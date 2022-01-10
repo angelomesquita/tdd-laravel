@@ -30,4 +30,9 @@ class Check extends Model
     {
         return $this->belongsTo(Site::class);
     }
+
+    public function webhookCalls()
+    {
+        return $this->hasMany(WebhookCall::class);
+    }
 }
