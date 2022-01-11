@@ -204,7 +204,7 @@ class SitesControllerTest extends TestCase
         $this->withoutExceptionHandling();
         $user = User::factory()->create();
         $archivedSite = $user->sites()->save(Site::factory()->make([
-            'url' => 'arcbivedsite.com',
+            'url' => 'archivedsite.com',
             'is_online' => false,
         ]));
         $archivedSite->archive();
