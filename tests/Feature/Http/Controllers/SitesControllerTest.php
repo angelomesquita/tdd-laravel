@@ -148,4 +148,79 @@ class SitesControllerTest extends TestCase
         $response->assertSeeText($webhookUrl);
         $this->assertEquals(route('sites.show', $site), url()->current());
     }
+
+    /** @test */
+    public function it_only_shows_offline_sites_when_the_filter_is_selected(): void
+    {
+        $this->withoutExceptionHandling();
+        $user = User::factory()->create();
+        $offlineSite = $user->sites()->save(Site::factory()->make([
+            'url' => 'goodsite.com',
+            'is_online' => false,
+        ]));
+        $onlineSite = $user->sites()->save(Site::factory()->make([
+            'url' => 'badsite.com',
+            'is_online' => true,
+        ]));
+        $response = $this->actingAs($user)
+            ->get(route('sites.index', ['status' => 'offline']));
+        $response->assertStatus(200);
+        $response->assertSeeText($offlineSite->url);
+        $response->assertSeeText($offlineSite->name);
+        $response->assertSeeText('Offline');
+        $response->assertDontSeeText($onlineSite->url);
+        $response->assertDontSeeText($onlineSite->name);
+        $response->assertDontSeeText('Online');
+    }
+
+    /** @test */
+    public function it_gets_active_sites(): void
+    {
+        $this->withoutExceptionHandling();
+        $user = User::factory()->create();
+        $archivedSite = $user->sites()->save(Site::factory()->make([
+            'url' => 'archivedsite.com',
+            'is_online' => false,
+        ]));
+        $archivedSite->archive();
+        $regularSite = $user->sites()->save(Site::factory()->make([
+            'url' => 'regularsite.com',
+            'is_online' => true,
+        ]));
+        $response = $this->actingAs($user)
+            ->get(route('sites.index', ['status' => 'active']));
+        $response->assertStatus(200);
+        $response->assertSeeText($regularSite->url);
+        $response->assertSeeText($regularSite->name);
+        $response->assertSeeText('Online');
+        $response->assertDontSeeText($archivedSite->url);
+        $response->assertDontSeeText($archivedSite->name);
+        $response->assertDontSee('Offline');
+    }
+
+    /** @test */
+    public function it_gets_archived_sites(): void
+    {
+        $this->withoutExceptionHandling();
+        $user = User::factory()->create();
+        $archivedSite = $user->sites()->save(Site::factory()->make([
+            'url' => 'arcbivedsite.com',
+            'is_online' => false,
+        ]));
+        $archivedSite->archive();
+        $regularSite = $user->sites()->save(Site::factory()->make([
+            'url' => 'regularsite.com',
+            'is_online' => true,
+        ]));
+        
+        $response = $this->actingAs($user)
+            ->get(route('sites.index', ['status' => 'archived']));
+        $response->assertStatus(200);
+        $response->assertSeeText($archivedSite->url);
+        $response->assertSeeText($archivedSite->name);
+        $response->assertSeeText('Offline');
+        $response->assertDontSeeText($regularSite->url);
+        $response->assertDontSeeText($regularSite->name);
+        $response->assertDontSeeText('Online');
+    }
 }
