@@ -176,7 +176,26 @@ class SitesControllerTest extends TestCase
     /** @test */
     public function it_gets_active_sites(): void
     {
-        $this->markTestIncomplete();
+        $this->withoutExceptionHandling();
+        $user = User::factory()->create();
+        $archivedSite = $user->sites()->save(Site::factory()->make([
+            'url' => 'archivedsite.com',
+            'is_online' => false,
+        ]));
+        $archivedSite->archive();
+        $regularSite = $user->sites()->save(Site::factory()->make([
+            'url' => 'regularsite.com',
+            'is_online' => true,
+        ]));
+        $response = $this->actingAs($user)
+            ->get(route('sites.index', ['status' => 'active']));
+        $response->assertStatus(200);
+        $response->assertSeeText($regularSite->url);
+        $response->assertSeeText($regularSite->name);
+        $response->assertSeeText('Online');
+        $response->assertDontSeeText($archivedSite->url);
+        $response->assertDontSeeText($archivedSite->name);
+        $response->assertDontSee('Offline');
     }
 
     /** @test */
