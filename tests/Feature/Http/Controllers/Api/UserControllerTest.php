@@ -22,10 +22,12 @@ class UserControllerTest extends TestCase
         $response = $this->getJson('api/user');
         
         $response->assertOk();
-        $response->assertJson([
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email
+        $response->assertExactJson([
+            'data' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email
+            ]
         ]);
     }
 }
